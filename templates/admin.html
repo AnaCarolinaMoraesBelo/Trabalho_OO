@@ -1,0 +1,79 @@
+<html lang="pt-br">
+    <head>
+        <meta charset="UTF-8">
+    </head>
+    <body>
+        <!--<form enctype="multipart/form-data" method="POST">
+            <input type="file" name="imagem" onchange="previewImagem(event)">
+            <img id="imagem-preview" style="display:none; max-width:300px; max-height:300px;">
+            <button type="submit">Enviar</button>
+        </form>
+        <script>
+            function previewImagem(event) {
+                const imagemPreview = document.getElementById('imagem-preview');
+                imagemPreview.src = URL.createObjectURL(event.target.files[0]);
+                imagemPreview.style.display = 'block';
+
+            }
+        </script>-->
+        <!--<form id="hihi" onsubmit='return handle(event)'>-->
+        <form method='POST' action= "{{ url_for('adicionarCampeao') }}" enctype="multipart/form-data">
+            <input type="file" name="imagem" onchange="previewImagem(event)">
+            <img id="imagem-preview" style="display:none; max-width:300px; max-height:300px;">
+            <script>
+            function previewImagem(event) {
+                const imagemPreview = document.getElementById('imagem-preview');
+                imagemPreview.src = URL.createObjectURL(event.target.files[0]);
+                imagemPreview.style.display = 'block';
+
+            }
+            </script>
+            <input id="nome" type=text name=nome placeholder="Nome">
+            <input id="lane" type=text name=lane placeholder="Lane">
+            <input id="dificuldade" type=text name=dificuldade placeholder="Dificuldade">
+            <input id="descricao" type=text name=descricao placeholder="Descrição">
+            <input id="tipoCombate" type=text name=tipoCombate placeholder="Tipo de Combate">
+            <input type=submit value=Adicionar>
+        </form>
+        {% for campeao in campeoes %}
+        ID: {{ campeao.id }}
+        <br>
+        Imagem: {{ campeao.imagem }}
+        <br>
+        Nome: {{ campeao.nome }}
+        <br>
+        Lane: {{ campeao.lane }}
+        <br>
+        Dificuldade: {{ campeao.dificuldade }}
+        <br>
+        Descrição: {{ campeao.descricao }}
+        <br>
+        Tipo de Combate: {{ campeao.tipoCombate }}
+        <br>
+        <form action="{{ url_for('apagarCampeao') }}" method="POST">
+            <p><input hidden name="id" value="{{ campeao.id }}">
+            <button type="submit">Delete</button>
+        </form>
+        <br>
+        {% endfor %}
+        <form action="{{ url_for('logout') }}" method="POST">
+            <button type="submit">Logout</button>
+        </form>
+        <script type="text/javascript">
+            const form = document.getElementById('hihi');
+
+            const nome = document.getElementById("nome");
+            const lane = document.getElementById("lane");
+            const dificuldade = document.getElementById("dificuldade");
+            const descricao = document.getElementById("descricao");
+            const tipoCombate = document.getElementById("tipoCombate");
+            const imagem = document.getElementById("imagem-preview");
+
+            const handle = (e) =>{
+                e.preventDefault();
+                console.log(nome.value)
+
+            }
+        </script>
+    </body>
+</html>

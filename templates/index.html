@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel="stylesheet" href="{{ url_for('static', filename='estilo.css') }}">
+        <script src="{{ url_for('static', filename='script.js') }}"></script>
+        <div id="nav-bar" style="background-color: white">
+            <div class ="box" style="display: flex">
+                <img class = "imgsol_lua" src="{{ url_for('static', filename='sun_icon.png') }}"></img>
+                <label class="switch">
+                    <input type="checkbox" onclick="trocarNoiteDia()">
+                    <span class="slider round"></span>
+                </label>
+                <img class = "imgsol_lua" src="{{ url_for('static', filename='night_icon.png') }}"></img>
+            </div>
+        </div>
+    </head>
+    <body style="background-color: white">
+        <h1 style="color: black;">Miti. Hehe, vamos jogar um lol?</h1>
+        <img class = "imgquadrada" src="{{ url_for('static', filename='images.jpeg') }}"></img>
+    </body>
+</html>
