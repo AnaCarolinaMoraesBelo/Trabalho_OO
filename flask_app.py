@@ -11,8 +11,10 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///minhabase.sqlite3'
 db = SQLAlchemy(app)
 app.app_context().push()
 app.secret_key = '123456'
-UPLOAD_FOLDER = "/home/AnaCarolina/mysite/imagens"
+# UPLOAD_FOLDER = "/home/AnaCarolina/mysite/imagens"
+UPLOAD_FOLDER = os.path.join(app.root_path, 'static', 'imagens')
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
 
 class Campeoes(db.Model):
     __tablename__ = "campeoes"
@@ -23,55 +25,40 @@ class Campeoes(db.Model):
     dificuldade = db.Column(db.String)
     descricao = db.Column(db.Text)
     tipoCombate = db.Column(db.String)
+    imagem_url = db.Column(db.String)
 
-    def __init__(self, nome, lane, dificuldade, descricao, tipoCombate):
+    def __init__(self, nome, lane, dificuldade, descricao, tipoCombate, imageUrl):
         self.nome = nome
         self.lane = lane
         self.dificuldade = dificuldade
         self.descricao = descricao
         self.tipoCombate = tipoCombate
-
-class Imagens(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    imagem = db.Column(db.LargeBinary, nullable=False)
-
-@app.route('/imagem/<int:id>')
-def get_imagem(id):
-    imagem = Imagens.query.filter_by(id=id).first_or_404()
-    return Response(imagem.imagem, mimetype='image/jpeg')
-
-@app.route('/cadastrar_imagem', methods=['GET', 'POST'])
-def cadastrar_imagem():
-    if request.method == 'POST':
-        imagem = request.files['imagem'].read()
-        nova_imagem = Imagens(imagem=imagem)
-        db.session.add(nova_imagem)
-        db.session.commit()
-        flash("Imagem cadastrada com sucesso", "success")
-        return redirect(url_for('get_imagem', id=nova_imagem.id))
-    return render_template('imagens.html')
+        self.imagem_url = imageUrl
 
 
-client = OpenAI(api_key = 'CHAVE')
+client = OpenAI(api_key='CHAVE')
+
 
 def perguntar(prompt):
     response = client.chat.completions.create(
-    model="gpt-3.5-turbo-0125",
-    response_format={ "type": "text" },
-    messages=[
-        {"role": "system", "content": "Responda flertando"},
-        {"role": "user", "content": prompt}
+        model="gpt-3.5-turbo-0125",
+        response_format={"type": "text"},
+        messages=[
+            {"role": "system", "content": "Responda flertando"},
+            {"role": "user", "content": prompt}
         ]
     )
     return response.choices[0].message.content
 
+
 @app.route('/10010begin7679676-67-97-114-111-108', methods=['POST', 'GET'])
 def chatgpt():
-	if request.method == 'POST':
-		prompt = request.form['questao']
-		resposta = perguntar(prompt)
-		return render_template("questao.html", resposta = resposta)
-	return render_template("questao.html")
+    if request.method == 'POST':
+        prompt = request.form['questao']
+        resposta = perguntar(prompt)
+        return render_template("questao.html", resposta=resposta)
+    return render_template("questao.html")
+
 
 @app.route('/10010privatesession7679676-67-97-114-111-108', methods=['POST', 'GET'])
 def adm():
@@ -87,21 +74,23 @@ def adm():
         <form>
         '''.format(url_for("login"))
 
+
 @app.route('/adicionarCampeao', methods=['POST'])
 def adicionarCampeao():
-#    nome = request.form["nome"]
-#    lane = request.form["lane"]
-#    dificuldade = request.form["dificuldade"]
-#    descricao = request.form["descricao"]
-#    tipoCombate = request.form["tipoCombate"]
-#    campeao = Campeoes(nome, lane, dificuldade, descricao, tipoCombate)
-#    db.session.add(campeao)
-#    db.session.commit()
-    print (request.form)
-#    savePath = os.path.join(UPLOAD_FOLDER, request.form['imagem'].filename)
-#    request.form['imagem'].save(savePath)
-#    return redirect(url_for('adm'))
-    return 'oi'
+    nome = request.form["nome"]
+    lane = request.form["lane"]
+    dificuldade = request.form["dificuldade"]
+    descricao = request.form["descricao"]
+    tipoCombate = request.form["tipoCombate"]
+    imagem = request.files["imagem"]
+    savePath = os.path.join(UPLOAD_FOLDER, imagem.filename)
+    imagem.save(savePath)
+    campeao = Campeoes(nome, lane, dificuldade,
+                       descricao, tipoCombate, f'/static/imagens/{imagem.filename}')
+    db.session.add(campeao)
+    db.session.commit()
+
+    return redirect(url_for('adm'))
 
 @app.route('/apagarCampeao', methods=['POST'])
 def apagarCampeao():
@@ -110,21 +99,25 @@ def apagarCampeao():
     db.session.commit()
     return redirect(url_for('adm'))
 
+
 @app.route('/login', methods=['POST'])
 def login():
-    if (request.method == 'POST') and (request.form['username']=="Toka" and request.form['senha'] == "87105108108"):
+    if (request.method == 'POST') and (request.form['username'] == "Toka" and request.form['senha'] == "87105108108"):
         session['username'] = request.form['username']
 
     return redirect(url_for('adm'))
+
 
 @app.route('/logout', methods=["POST", "GET"])
 def logout():
     session.pop('username', None)
     return redirect(url_for('adm'))
 
+
 @app.route('/final')
 def index():
     return render_template("index.html")
+
 
 with app.app_context():
     db.create_all()
