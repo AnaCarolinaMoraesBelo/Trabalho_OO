@@ -4,6 +4,7 @@ from openai import OpenAI
 import os
 from dotenv import load_dotenv
 import pandas as pd
+from abc import ABC, abstractmethod
 
 load_dotenv(override=True)
 
@@ -38,14 +39,85 @@ class Campeoes(db.Model):
         self.tipoCombate = tipoCombate
         self.imagem_url = imageUrl
 
+# Classe que implementa os padrões Singleton e Iterator
+class GerenciadorCampeoes():
+    __instance = None
 
+    def __new__(cls):
+       if GerenciadorCampeoes.__instance is None:
+          GerenciadorCampeoes.__instance = super().__new__(cls)
+       return GerenciadorCampeoes.__instance
+    
+    def __init__(self):
+        if not hasattr(self, 'iniciado'):
+            self.__campeoes = {}
+            self.__ids = []
+            self.indice = 0
+            GerenciadorCampeoes.__instance = self
+            self.iniciado = True
+    
+    def addCampeao(self, campeao):
+        self.__ids.append(campeao.id)
+        self.__campeoes[campeao.id] = campeao
+        
+    def getCampeaoById(self, id):
+        return self.__campeoes[id]
+        
+    def __iter__ (self):
+        return self    
+
+    def __next__(self):
+        if self.indice < len(self.__campeoes):
+            campeao = self.__campeoes[self.__ids[self.indice]]
+            self.indice += 1
+            return campeao
+        else:
+            self.indice = 0
+            raise StopIteration
+
+class CampeaoFlyweight:
+    atributos_comuns = {}
+
+    @classmethod
+    def get_atributo_comum(cls, lane, dificuldade, categoria, tipoCombate):
+        key = (lane, dificuldade, categoria, tipoCombate)
+        if key not in cls.atributos_comuns:
+            cls.atributos_comuns[key] = (lane, dificuldade, categoria, tipoCombate)
+        return cls.atributos_comuns[key]
+
+class Campeao():
+    def __init__(self, id, nome, lane, dificuldade, descricao, categoria, tipoCombate, imageUrl):
+        self.id = id
+        self.nome = nome
+        self.atributos_compartilhados = CampeaoFlyweight.get_atributo_comum(lane, dificuldade, categoria, tipoCombate)
+        self.descricao = descricao
+        self.imagem_url = imageUrl
+        
+    def getInfo(self):
+        dicio = dict()
+        dicio["id"] = self.id
+        dicio["nome"] = self.nome
+        dicio["descricao"] = self.descricao
+        dicio["lane"] = self.atributos_compartilhados[0]
+        dicio["dificuldade"] = self.atributos_compartilhados[1]
+        dicio["categoria"] = self.atributos_compartilhados[2]
+        dicio["tipoCombate"] = self.atributos_compartilhados[3]
+        dicio["imagem_url"] = self.imagem_url
+        return dicio
+    
+def inicializarGerenciador():
+    gerenciadorCampeoes = GerenciadorCampeoes()
+        
+    for campeao in Campeoes.query.all():
+        gerenciadorCampeoes.addCampeao(Campeao(campeao.id, campeao.nome, campeao.lane, campeao.dificuldade, campeao.descricao, campeao.categoria, campeao.tipoCombate, campeao.imagem_url))
+        
 print(os.getenv('OPENAI_API_KEY'))
 client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
 
 
 def perguntar(messages):
     response = client.chat.completions.create(
-        model="gpt-3.5-turbo",  # gpt-4o
+        model="gpt-3.5-turbo",
         response_format={"type": "text"},
         messages=messages
     )
@@ -56,18 +128,8 @@ def perguntar(messages):
 @app.route('/', methods=['POST', 'GET'])
 def chatgpt():
     if request.method == 'POST':
-        lista = []
-        for campeao in Campeoes.query.all():
-            lista.append({
-                'id': campeao.id,
-                'nome': campeao.nome,
-                'lane': campeao.lane,
-                'dificuldade': campeao.dificuldade,
-                'descricao': campeao.descricao,
-                'categoria': campeao.categoria,
-                'tipoCombate': campeao.tipoCombate
-            })
-
+        gerenciadorCampeoes = GerenciadorCampeoes()
+        
         vusr = f'''
             Dificuldade do campeão: "{request.form['1']}",
             Lane do campeão: "{request.form['2']}",
@@ -76,23 +138,22 @@ def chatgpt():
         '''
 
         vstm = f'''
-            Você é um verificador de similaridade, dado a base abaixo, determine o id de um campeão mais similar a afirmação do usuário.
+            Você é um verificador de similaridade, dado a base abaixo, determine os ids mais similares a afirmação do usuário.
 
-            1\ Se a afirmação do usuário não for encontrada na base, retorne -1.
-            2\ Retorne apenas os ids dos campeões mais similares em um vetor, sem nenhum outro texto, assim como no modelo de resposta abaixo.
-            3\ Seja extremamente preciso com a comparação dos campos indicados, retorne apenas os que são condizentes com a informação do usuário.
-            4\ Retorne apenas os que tem a similaridade maior que 75%.
+            1\ A base de dados segue o seguinte formato: [(id1, nome1, dificuldade1, lane1, categoria1, tipoCombate1), (id2, nome2, dificuldade2, lane2, categoria2, tipoCombate2), ...]
+            2\ Retorne apenas os ids dos três campeões mais similares em um vetor, sem nenhum outro texto, assim como no modelo de resposta abaixo.
+            3\ O vetor deve estar ordenado decrescentemente do id do campeão mais provável até o menos provável. 
+            4\ Seja extremamente preciso com a comparação dos campos indicados, retorne apenas os que são condizentes com a informação do usuário. 
 
             Modelo de resposta: [id1, id2, id3, ...].
 
-            Base de dados: {lista}
-
+            Base de dados: {[(campeao.getInfo()['id'], campeao.getInfo()['nome'], campeao.getInfo()['dificuldade'], campeao.getInfo()['lane'], campeao.getInfo()['categoria'] ,campeao.getInfo()['tipoCombate']) for campeao in gerenciadorCampeoes]}
 
             Afirmações do usuário: 
         '''
-
+        print(vstm)
+        
         msgs = [
-            {"role": "system", "content": "Você é um analista verificador de similaridade"},
             {"role": "system", "content": vstm},
             {"role": "user", "content": vusr}
         ]
@@ -100,9 +161,9 @@ def chatgpt():
 
         ids = resposta.replace('[', '').replace(']', '').split(',')
 
-        def champs(x): return Campeoes.query.filter_by(id=x).first()
+        def champs(x): return gerenciadorCampeoes.getCampeaoById(id=x)
 
-        return render_template("questao.html", resposta=resposta, campeoes=[champs(int(x)) for x in ids])
+        return render_template("questao.html", resposta=resposta, campeoes=[champs(int(x)).getInfo() for x in ids])
     return render_template("questao.html")
 
 
@@ -170,6 +231,7 @@ def index():
 with app.app_context():
     db.create_all()
     db.session.commit()
+    inicializarGerenciador()
 
 if __name__ == "__main__":
     app.run()
