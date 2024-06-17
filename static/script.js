@@ -5,4 +5,10 @@ function trocarNoiteDia() {
     else {
         document.body.style.backgroundColor = "white";
     }
+    if(document.body.style.color === "white"){
+        document.body.style.color = "black";
+    }
+    else {
+        document.body.style.color = "white";
+    }
 }

@@ -39,6 +39,8 @@
         <br>
         <input id="descricao" type=text name=descricao placeholder="Descrição">
         <br>
+        <input id="categoria" type=text name=categoria placeholder="Categoria">
+        <br>
         <input id="tipoCombate" type=text name=tipoCombate placeholder="Tipo de Combate">
         <br>
         <input type=submit value=Adicionar>
@@ -46,7 +48,7 @@
     {% for campeao in campeoes %}
     ID: {{ campeao.id }}
     <br>
-    Imagem: <img src="{{ campeao.imagem_url }}" style="width: 100px; height: 100px;" />
+    Imagem: <img src="{{ campeao.imagem_url }}" style="width: 750px; height: 500px;" />
     <br>
     Nome: {{ campeao.nome }}
     <br>
@@ -55,6 +57,8 @@
     Dificuldade: {{ campeao.dificuldade }}
     <br>
     Descrição: {{ campeao.descricao }}
+    <br>
+    Categoria: {{ campeao.categoria }}
     <br>
     Tipo de Combate: {{ campeao.tipoCombate }}
     <br>
@@ -74,6 +78,7 @@
         const lane = document.getElementById("lane");
         const dificuldade = document.getElementById("dificuldade");
         const descricao = document.getElementById("descricao");
+        const categoria = document.getElementsById("categoria");
         const tipoCombate = document.getElementById("tipoCombate");
         const imagem = document.getElementById("imagem-preview");
 
@@ -84,5 +89,4 @@
         }
     </script>
 </body>
-
 </html>
