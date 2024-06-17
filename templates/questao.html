@@ -1,75 +1,92 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <link rel="stylesheet" href="{{ url_for('static', filename='estilo.css') }}">
-        <script src="{{ url_for('static', filename='script.js') }}"></script>
-        <div id="nav-bar" style="background-color: white; color: black">
-            <div class ="box" style="display: flex">
-                <img class = "imgsol_lua" src="{{ url_for('static', filename='sun_icon.png') }}"></img>
-                <label class="switch">
-                    <input type="checkbox" onclick="trocarNoiteDia()">
-                    <span class="slider round"></span>
-                </label>
-                <img class = "imgsol_lua" src="{{ url_for('static', filename='night_icon.png') }}"></img>
-            </div>
-        </div>
-    </head>
-    <body style="background-color: white; display: flex; align-items: center; flex-direction: column;">
-        <form action="{{ url_for('chatgpt') }}" method="post">
-            <p style="text-align: center; font-size: 2.675rem">?</p>
-            <br>
-            <p style="text-align: center;">Qual o nível de dificuldade de campeão?</p>
-            <div style="text-align: center;">
-                <input type="radio" name="1" value="facil" id="facil-um">
-                <label for="facil-um">Fácil</label>
-                <input type="radio" name="1" value="medio" id="medio-um">
-                <label for="medio-um">Médio</label>
-                <input type="radio" name="1" value="dificil" id="dificil-um">
-                <label for="dificil-um">Difícil</label>
-            </div>
-            <p style="text-align: center;">Qual rota você prefere?</p>
-            <div style="text-align: center;">
-                <input type="radio" name="2" value="top" id="top-dois">
-                <label for="top-dois">Top</label>
-                <input type="radio" name="2" value="jungle" id="jungle-dois">
-                <label for="jungle-dois">Jungle</label>
-                <input type="radio" name="2" value="mid" id="mid-dois">
-                <label for="mid-dois">Mid</label>
-                <input type="radio" name="2" value="adc" id="adc-dois">
-                <label for="adc-dois">Adc</label>
-                <input type="radio" name="2" value="sup" id="sup-dois">
-                <label for="sup-dois">Sup</label>
-            </div>
-            <p style="text-align: center;">Você gosta de jogar mais com campeões de qual categoria?</p>
-            <div style="text-align: center;">
-                <input type="radio" name="3" value="assassin" id="assassino-tres">
-                <label for="assassino-tres">Assassino</label>
-                <input type="radio" name="3" value="warrior" id="lutador-tres">
-                <label for="lutador-tres">Lutador</label>
-                <input type="radio" name="3" value="marksman" id="atirador-tres">
-                <label for="atirador-tres">Atirador</label>
-                <input type="radio" name="3" value="support" id="suporte-tres">
-                <label for="suporte-tres">Suporte</label>
-                <input type="radio" name="3" value="mage" id="mago-tres">
-                <label for="mago-tres">Mago</label>
-                <input type="radio" name="3" value="tank" id="tanque-tres">
-                <label for="tanque-tres">Tanque</label>
 
-            </div>
-            <p style="text-align: center;">Você gosta de jogar com campeões com o tipo de combate de perto ou de longe?</p>
-            <div style="text-align: center;">
-                <input type="radio" name="4" value="magico" id="magico-quatro">
-                <label for="magico-quatro">Mágico</label>
-                <input type="radio" name="4" value="fisico" id="fisico-quatro">
-                <label for="fisico-quatro">Físico</label>
-            </div>
-            <!-- <input type="text" name="questao"> -->
-            <br>
-            <div style="text-align: center;">
-                <input type="submit">
-            </div>
-            <br>
-        </form>
-        {{ resposta }}
-    </body>
+<head>
+    <link rel="stylesheet" href="{{ url_for('static', filename='estilo.css') }}">
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <div id="nav-bar" style="background-color: white; color: black">
+        <div class="box" style="display: flex">
+            <img class="imgsol_lua" src="{{ url_for('static', filename='sun_icon.png') }}"></img>
+            <label class="switch">
+                <input type="checkbox" onclick="trocarNoiteDia()">
+                <span class="slider round"></span>
+            </label>
+            <img class="imgsol_lua" src="{{ url_for('static', filename='night_icon.png') }}"></img>
+        </div>
+    </div>
+</head>
+
+<body style="background-color: white; display: flex; align-items: center; flex-direction: column;">
+    <form action="{{ url_for('chatgpt') }}" method="post">
+        <p style="text-align: center; font-size: 2.675rem">?</p>
+        <br>
+        <p style="text-align: center;">Qual o nível de dificuldade de campeão?</p>
+        <div style="text-align: center;">
+            <input type="radio" name="1" value="Fácil" id="facil-um">
+            <label for="facil-um">Fácil</label>
+            <input type="radio" name="1" value="Médio" id="medio-um">
+            <label for="medio-um">Médio</label>
+            <input type="radio" name="1" value="Difícil" id="dificil-um">
+            <label for="dificil-um">Difícil</label>
+        </div>
+        <p style="text-align: center;">Qual rota você prefere?</p>
+        <div style="text-align: center;">
+            <input type="radio" name="2" value="Top" id="top-dois">
+            <label for="top-dois">Top</label>
+            <input type="radio" name="2" value="Jungle" id="jungle-dois">
+            <label for="jungle-dois">Jungle</label>
+            <input type="radio" name="2" value="Mid" id="mid-dois">
+            <label for="mid-dois">Mid</label>
+            <input type="radio" name="2" value="Atirador" id="adc-dois">
+            <label for="adc-dois">Adc</label>
+            <input type="radio" name="2" value="Suporte" id="sup-dois">
+            <label for="sup-dois">Sup</label>
+        </div>
+        <p style="text-align: center;">Você gosta de jogar mais com campeões de qual categoria?</p>
+        <div style="text-align: center;">
+            <input type="radio" name="3" value="Assasin" id="assassino-tres">
+            <label for="assassino-tres">Assassino</label>
+            <input type="radio" name="3" value="Warrior" id="lutador-tres">
+            <label for="lutador-tres">Lutador</label>
+            <input type="radio" name="3" value="Marksman" id="atirador-tres">
+            <label for="atirador-tres">Atirador</label>
+            <input type="radio" name="3" value="Support" id="suporte-tres">
+            <label for="suporte-tres">Suporte</label>
+            <input type="radio" name="3" value="Mage" id="mago-tres">
+            <label for="mago-tres">Mago</label>
+            <input type="radio" name="3" value="Tank" id="tanque-tres">
+            <label for="tanque-tres">Tanque</label>
+
+        </div>
+        <p style="text-align: center;">Você gosta de jogar com campeões com o tipo de combate de perto ou de longe?</p>
+        <div style="text-align: center;">
+            <input type="radio" name="4" value="Mágico" id="magico-quatro">
+            <label for="magico-quatro">Mágico</label>
+            <input type="radio" name="4" value="Físico" id="fisico-quatro">
+            <label for="fisico-quatro">Físico</label>
+        </div>
+        <!-- <input type="text" name="questao"> -->
+        <br>
+        <div style="text-align: center;">
+            <input type="submit">
+        </div>
+        <br>
+    </form>
+    {{ resposta }}
+
+    {% if campeoes %}
+
+    {% for campeao in campeoes %}
+    <div style="display: flex; align-items: center; flex-direction: column;">
+        <img src="{{ campeao['imagem_url'] }}" style="width: 100px; height: 100px;">
+        <p>{{ campeao['nome'] }}</p>
+        <p>{{ campeao['dificuldade'] }}</p>
+        <p>{{ campeao['lane'] }}</p>
+        <p>{{ campeao['categoria'] }}</p>
+        <p>{{ campeao['tipoCombate'] }}</p>
+    </div>
+    {% endfor %}
+    {% endif %}
+</body>
+
 </html>

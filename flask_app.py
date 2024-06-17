@@ -38,17 +38,16 @@ class Campeoes(db.Model):
         self.tipoCombate = tipoCombate
         self.imagem_url = imageUrl
 
-print (os.getenv('OPENAI_API_KEY'))
+
+print(os.getenv('OPENAI_API_KEY'))
 client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
 
-def perguntar(prompt):
+
+def perguntar(messages):
     response = client.chat.completions.create(
-        model="gpt-3.5-turbo-0125",
+        model="gpt-3.5-turbo",  # gpt-4o
         response_format={"type": "text"},
-        messages=[
-            {"role": "system", "content": "Você é um analista verificador de similaridade"},
-            {"role": "system", "content": prompt}
-        ]
+        messages=messages
     )
     return response.choices[0].message.content
     # return "david melhor supremo adc irelia-king"
@@ -57,37 +56,53 @@ def perguntar(prompt):
 @app.route('/', methods=['POST', 'GET'])
 def chatgpt():
     if request.method == 'POST':
-        lista=[]
+        lista = []
         for campeao in Campeoes.query.all():
             lista.append({
                 'id': campeao.id,
-                'nome':campeao.nome,
-                'lane':campeao.lane,
+                'nome': campeao.nome,
+                'lane': campeao.lane,
                 'dificuldade': campeao.dificuldade,
                 'descricao': campeao.descricao,
                 'categoria': campeao.categoria,
                 'tipoCombate': campeao.tipoCombate
             })
-        v = f'''
-            Você é um verificador de similaridade, dado a base abaixo, determine o id de um campeão mais similar a afirmação do usuário.
-            1\ Sendo um campeão com a dificuldade igual a "{request.form['1']}",
-            2\ Sendo um campeão com a rota/lane similar a "{request.form['2']}",
-            3\ Sendo um campeão com o categoria similar a "{request.form['3']}",
-            4\ Sendo um campeão com o tipo de combate igual a "{request.form['4']}",
-            5\ Se a afirmação do usuário não for encontrada na base, retorne -1,
-            6\ Retorne apenas os ids dos campeões mais similares em um vetor, sem nenhum outro texto
-            7\ Seja preciso com a comparação dos campos indicados, retorne apenas os que são condizentes com a informação do usuário
 
-            Modelo de resposta: '1' "(Nome do campeão)", '2' "(Nome do campeão)", '3' "(Nome do campeão)", '4' "(Nome do campeão)"
-            
-            
-            Base de dados: {lista}
-            
+        vusr = f'''
+            Dificuldade do campeão: "{request.form['1']}",
+            Lane do campeão: "{request.form['2']}",
+            Categoria do campeão: "{request.form['3']}",
+            Tipo de combate do campeão "{request.form['4']}",
         '''
-        
-        resposta = perguntar(v)
-        print (v)
-        return render_template("questao.html", resposta=resposta)
+
+        vstm = f'''
+            Você é um verificador de similaridade, dado a base abaixo, determine o id de um campeão mais similar a afirmação do usuário.
+
+            1\ Se a afirmação do usuário não for encontrada na base, retorne -1.
+            2\ Retorne apenas os ids dos campeões mais similares em um vetor, sem nenhum outro texto, assim como no modelo de resposta abaixo.
+            3\ Seja extremamente preciso com a comparação dos campos indicados, retorne apenas os que são condizentes com a informação do usuário.
+            4\ Retorne apenas os que tem a similaridade maior que 75%.
+
+            Modelo de resposta: [id1, id2, id3, ...].
+
+            Base de dados: {lista}
+
+
+            Afirmações do usuário: 
+        '''
+
+        msgs = [
+            {"role": "system", "content": "Você é um analista verificador de similaridade"},
+            {"role": "system", "content": vstm},
+            {"role": "user", "content": vusr}
+        ]
+        resposta = perguntar(msgs)
+
+        ids = resposta.replace('[', '').replace(']', '').split(',')
+
+        def champs(x): return Campeoes.query.filter_by(id=x).first()
+
+        return render_template("questao.html", resposta=resposta, campeoes=[champs(int(x)) for x in ids])
     return render_template("questao.html")
 
 
@@ -150,6 +165,7 @@ def logout():
 @app.route('/index')
 def index():
     return render_template("index.html")
+
 
 with app.app_context():
     db.create_all()
